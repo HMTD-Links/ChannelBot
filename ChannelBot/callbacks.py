@@ -5,15 +5,9 @@ from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardBu
 from pyrogram.errors import ButtonUrlInvalid
 from ChannelBot.database.users_sql import remove_channel as urc
 from ChannelBot.database.channel_sql import (
-    remove_channel as crc,
-    set_caption,
+    remove_channel as crc,⁶
     set_buttons,
-    set_sticker,
-    set_position,
-    set_edit_mode,
-    toggle_webpage_preview,
-    get_channel_info,
-    get_sticker
+    get_channel_info
 )
 from ChannelBot.manage import manage_channels
 from ChannelBot.settings import channel_settings
@@ -87,25 +81,11 @@ async def _callbacks(bot: Client, callback_query: CallbackQuery):
         success, info = await get_channel_info(channel_id)
         if success:
             buttons = info['buttons']
-            caption = info['caption']
+            # caption = info['caption']
             # position = info['position']
             # webpage_preview = info['webpage_preview']
-            sticker_id = info['sticker_id']
-            if change == 'caption':
-                if caption:
-                    buttons = [
-                        [InlineKeyboardButton('Change Caption', callback_data=f'add+{change}+{channel_id}')],
-                        [InlineKeyboardButton('Remove Caption', callback_data=f'remove+{change}+{channel_id}')],
-                        [InlineKeyboardButton('<-- Back to Channel Settings', callback_data=f'home+{channel_id}')]
-                    ]
-                    await callback_query.edit_message_text(f'Current Caption is : \n\n{caption} \n\nUse below buttons to change or remove it.', reply_markup=InlineKeyboardMarkup(buttons))
-                else:
-                    buttons = [
-                        [InlineKeyboardButton('Add Caption', callback_data=f'add+{change}+{channel_id}')],
-                        [InlineKeyboardButton('<-- Back to Channel Settings', callback_data=f'home+{channel_id}')]
-                    ]
-                    await callback_query.edit_message_text(f'No Caption set \n\nUse below button to add it.', reply_markup=InlineKeyboardMarkup(buttons))
-            elif change == 'buttons':
+            # sticker_id = info['sticker_id']
+            if change == 'buttons':
                 if buttons:
                     _buttons = [
                         [InlineKeyboardButton('Change URL Buttons', callback_data=f'add+{change}+{channel_id}')],
@@ -119,62 +99,6 @@ async def _callbacks(bot: Client, callback_query: CallbackQuery):
                         [InlineKeyboardButton('<-- Back to Channel Settings', callback_data=f'home+{channel_id}')]
                     ]
                     await callback_query.edit_message_text(f'No Buttons set \n\nUse below button to add them.', reply_markup=InlineKeyboardMarkup(_buttons))
-            elif change == 'position':
-                current_position = query.split('+')[3]
-                if current_position == 'below':
-                    new_position = 'above'
-                elif current_position == 'above':
-                    new_position = 'replace'
-                else:
-                    new_position = 'below'
-                await set_position(channel_id, new_position)
-                text, markup, __ = await channel_settings(channel_id, bot)
-                if text:
-                    await callback_query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(markup), disable_web_page_preview=True)
-                else:
-                    await callback_query.answer("Channel doesn't exist in database", show_alert=True)
-                    await callback_query.message.delete()
-            elif change == 'edit_mode':
-                current_edit_mode = query.split('+')[3]
-                if current_edit_mode == 'all':
-                    new_edit_mode = 'media'
-                else:
-                    new_edit_mode = 'all'
-                await set_edit_mode(channel_id, new_edit_mode)
-                text, markup, __ = await channel_settings(channel_id, bot)
-                if text:
-                    await callback_query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(markup), disable_web_page_preview=True)
-                else:
-                    await callback_query.answer("Channel doesn't exist in database", show_alert=True)
-                    await callback_query.message.delete()
-            elif change == 'sticker':
-                if sticker_id:
-                    buttons = [
-                        [InlineKeyboardButton('Show Current Sticker', callback_data=f'show+{channel_id}')],
-                        [InlineKeyboardButton('Change Sticker', callback_data=f'add+{change}+{channel_id}')],
-                        [InlineKeyboardButton('Remove Sticker', callback_data=f'remove+{change}+{channel_id}')],
-                        [InlineKeyboardButton('<-- Back to Channel Settings', callback_data=f'home+{channel_id}')]
-                    ]
-                    await callback_query.edit_message_text(f'A sticker is already set. See it by tapping \'Show Current Sticker\' button \n\nUse below buttons to change or remove it.', reply_markup=InlineKeyboardMarkup(buttons))
-                else:
-                    buttons = [
-                        [InlineKeyboardButton('Add Sticker', callback_data=f'add+{change}+{channel_id}')],
-                        [InlineKeyboardButton('<-- Back to Channel Settings', callback_data=f'home+{channel_id}')]
-                    ]
-                    await callback_query.edit_message_text(f'No Sticker set \n\nUse below button to add it.', reply_markup=InlineKeyboardMarkup(buttons))
-            elif change == 'webpage_preview':
-                current = query.split('+')[3]
-                if current.lower() == 'true':
-                    new = False
-                else:
-                    new = True
-                await toggle_webpage_preview(channel_id, new)
-                text, markup, __ = await channel_settings(channel_id, bot)
-                if text:
-                    await callback_query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(markup), disable_web_page_preview=True)
-                else:
-                    await callback_query.answer("Channel doesn't exist in database", show_alert=True)
-                    await callback_query.message.delete()
     elif query.startswith('add'):
         add = query.split('+')[1]
         channel_id = int(query.split('+')[2])
