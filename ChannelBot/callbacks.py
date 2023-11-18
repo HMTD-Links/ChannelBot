@@ -5,7 +5,7 @@ from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardBu
 from pyrogram.errors import ButtonUrlInvalid
 from ChannelBot.database.users_sql import remove_channel as urc
 from ChannelBot.database.channel_sql import (
-    remove_channel as crc,⁶
+    remove_channel as crc,
     set_buttons,
     get_channel_info
 )
@@ -103,25 +103,7 @@ async def _callbacks(bot: Client, callback_query: CallbackQuery):
         add = query.split('+')[1]
         channel_id = int(query.split('+')[2])
         try:
-            if add == 'caption':
-                data = await bot.ask(user_id, 'Please send the new caption or /cancel the process. Anything you send now will be set as caption so be careful !', timeout=300)
-                if data.text.lower() == '/cancel':
-                    await data.reply('Cancelled', quote=True)
-                else:
-                    await set_caption(channel_id, data.text.markdown)
-                    await data.reply('Caption set successfully !', quote=True)
-                    text, markup, sticker_id = await channel_settings(channel_id, bot)
-                    if sticker_id:
-                        await callback_query.message.reply_sticker(sticker_id)
-                    if text:
-                        await callback_query.message.delete()
-                        await callback_query.message.reply(text, reply_markup=InlineKeyboardMarkup(markup), disable_web_page_preview=True)
-                    else:
-                        await callback_query.answer('Channel Not Found. Please add again !', show_alert=True)
-                        await crc(channel_id)
-                        await urc(user_id, channel_id)
-                        await callback_query.message.delete()
-            elif add == 'buttons':
+            if add == 'buttons':
                 data = await bot.ask(
                     user_id,
                     "**Buttons Format:** \n\n"
@@ -163,32 +145,6 @@ async def _callbacks(bot: Client, callback_query: CallbackQuery):
                             break
                         except ButtonUrlInvalid:
                             data = await bot.ask(user_id, 'Wrong Format for Buttons! Please try again.', timeout=300)
-            elif add == 'position':
-                # Won't happen
-                pass
-            elif add == 'edit_mode':
-                # Won't happen
-                pass
-            elif add == 'sticker':
-                data = await bot.ask(user_id, 'Please send a sticker.', timeout=300, filters=filters.sticker)
-                await set_sticker(channel_id, data.sticker.file_id)
-                await data.reply('Sticker set successfully !', quote=True)
-                text, markup, sticker_id = await channel_settings(channel_id, bot)
-                if sticker_id:
-                    await callback_query.message.reply_sticker(sticker_id)
-                if text:
-                    await callback_query.message.delete()
-                    await callback_query.message.reply(text, reply_markup=InlineKeyboardMarkup(markup), disable_web_page_preview=True)
-                else:
-                    await callback_query.answer('Channel Not Found. Please add again !', show_alert=True)
-                    await crc(channel_id)
-                    await urc(user_id, channel_id)
-                    await callback_query.message.delete()
-            elif add == 'webpage_preview':
-                # Won't happen
-                pass
-        except asyncio.exceptions.TimeoutError:
-            pass
     elif query.startswith('remove'):
         args = query.split('+')
         if len(args) == 2:
